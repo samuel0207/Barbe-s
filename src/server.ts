@@ -678,7 +678,7 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       if (!res.ok) {
         showMsg(out.error || 'Erro ao agendar', true);
       } else {
-        showMsg('✔ Agendamento confirmado! Seu horário já aparece no painel exclusivo do barbeiro.', false);
+        showMsg('✔ Agendamento confirmado! Seu horário já aparece no painel exclusivo do barbeiro. Você receberá uma mensagem via WhatsApp 30 minutos antes do horário para confirmar seu atendimento.', false);
         document.getElementById('inp-name').value = '';
         loadPublicShop();
       }
@@ -1102,9 +1102,12 @@ const PORTAL_HTML = `<!DOCTYPE html>
 
           <!-- ABA 1: AGENDAMENTOS -->
           <div id="tab-appts" class="browser-tab-content active">
+            <!-- BANNER DE NOTIFICAÇÃO AUTOMÁTICA DE WHATSAPP (30 MIN ANTES) -->
+            <div id="wa-reminder-banner" style="display:none;background:#fbf1df;border:2px solid var(--gold);border-radius:10px;padding:14px 18px;margin-bottom:16px;"></div>
+
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
               <h3>📅 Agendamentos Recebidos</h3>
-              <span style="font-size:0.82rem;color:var(--muted);">Atualizado em tempo real com o link público da barbearia</span>
+              <span style="font-size:0.82rem;color:var(--muted);">🔔 O painel notifica automaticamente 30 min antes de cada horário para envio do WhatsApp</span>
             </div>
             <div class="table-wrap">
               <table>
@@ -1115,6 +1118,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
                     <th>Barbeiro</th>
                     <th>Corte Escolhido</th>
                     <th>Valor</th>
+                    <th>Lembrete WhatsApp (30 min)</th>
                     <th>Status</th>
                     <th>Ação do Vendedor</th>
                   </tr>
@@ -1399,24 +1403,93 @@ const PORTAL_HTML = `<!DOCTYPE html>
 
       const statusPt = { SCHEDULED: 'AGENDADO', COMPLETED: 'CONCLUÍDO', CANCELED: 'CANCELADO' };
       const sortedAppts = [...data.appointments].sort((a, b) => a.startAt - b.startAt);
+      const sentMap = JSON.parse(localStorage.getItem('wa_sent_map') || '{}');
+      const nowMs = Date.now();
+      const dueReminders = [];
+
       document.getElementById('tb-appts').innerHTML = sortedAppts.map(a => {
         const cl = clientMap[a.clientId] || { name: a.clientId, phone: '' };
         const srv = serviceMap[a.serviceId] || { name: a.serviceId, priceCents: 0 };
+        const barberName = (barberMap[a.barberId]?.name || a.barberId).split('—')[0].trim();
+        const reminderAt = a.startAt - 30 * 60_000;
+        const minsLeft = Math.round((a.startAt - nowMs) / 60_000);
+        const isDue30Min = a.status === 'SCHEDULED' && minsLeft <= 35 && minsLeft >= -15;
+        const wasSent = Boolean(sentMap[a.id]);
+
+        const rawDigits = String(cl.phone || '').replace(/\\D/g, '');
+        const waPhone = rawDigits.startsWith('55') ? rawDigits : '55' + rawDigits;
+        const waText = \`Olá \${cl.name}! Passando da \${data.shop.name} para confirmar seu agendamento hoje às \${fmtTime(a.startAt)} (\${srv.name} com \${barberName}). Podemos confirmar sua presença?\`;
+        const waUrl = \`https://wa.me/\${waPhone}?text=\${encodeURIComponent(waText)}\`;
+
+        if (isDue30Min && !wasSent) {
+          dueReminders.push({ id: a.id, clientName: cl.name, phone: cl.phone, startAt: a.startAt, srvName: srv.name, waUrl, minsLeft });
+        }
+
+        let waCol = '<span style="color:var(--muted);font-size:0.78rem;">—</span>';
+        if (a.status === 'SCHEDULED') {
+          const statusLabel = wasSent
+            ? '<span style="color:var(--green);font-weight:800;font-size:0.76rem;display:block;margin-bottom:4px;">✔ Msg 30min Enviada</span>'
+            : isDue30Min
+              ? '<span style="color:var(--red);font-weight:800;font-size:0.76rem;display:block;margin-bottom:4px;">🔔 ENVIAR AGORA (≤ 30 min!)</span>'
+              : \`<span style="color:var(--muted);font-size:0.75rem;display:block;margin-bottom:4px;">⏰ Disparo às <strong>\${fmtTime(reminderAt)}</strong></span>\`;
+
+          waCol = \`
+            \${statusLabel}
+            <button type="button" class="btn-sm" style="background:#25D366;color:#141824;" onclick="sendWhatsAppReminder('\${a.id}', '\${waUrl}')">
+              📲 \${wasSent ? 'Reenviar WhatsApp' : 'Mandar Msg (30 min)'}
+            </button>
+          \`;
+        }
+
         const act = a.status === 'SCHEDULED'
           ? \`<button class="btn-sm" onclick="ownerAction('\${a.id}','complete')">✔ Concluir</button>
              <button class="btn-sm btn-cancel" onclick="ownerAction('\${a.id}','cancel')">✖</button>\`
           : '<span style="color:var(--muted);font-size:0.78rem;">Finalizado</span>';
-        return \`<tr>
+        return \`<tr style="\${isDue30Min && !wasSent ? 'background:#fff8eb;' : ''}">
           <td><strong>\${fmtTime(a.startAt)}</strong> - \${fmtTime(a.endAt)}</td>
           <td>\${cl.name} <span style="color:var(--muted);font-size:0.76rem;">(\${cl.phone})</span></td>
           <td>\${barberMap[a.barberId]?.name || a.barberId}</td>
           <td>\${srv.name}</td>
           <td>\${fmtBRL(srv.priceCents)}</td>
+          <td>\${waCol}</td>
           <td><span class="status status-\${a.status}">\${statusPt[a.status] || a.status}</span></td>
           <td>\${act}</td>
         </tr>\`;
       }).join('');
+
+      const bannerEl = document.getElementById('wa-reminder-banner');
+      if (dueReminders.length > 0) {
+        bannerEl.style.display = 'block';
+        bannerEl.innerHTML = \`
+          <div style="font-weight:800;color:var(--navy);margin-bottom:8px;font-size:0.95rem;">
+            🔔 ATENÇÃO DONO: Faltam 30 minutos (ou menos) para \${dueReminders.length} atendimento(s)! Envie a confirmação no WhatsApp:
+          </div>
+          \${dueReminders.map(r => \`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border-sand);flex-wrap:wrap;gap:8px;">
+              <span>👤 <strong>\${r.clientName}</strong> (\${r.phone}) — Corte: <strong>\${r.srvName}</strong> às <strong>\${fmtTime(r.startAt)}</strong></span>
+              <button type="button" class="btn-sm" style="background:#25D366;color:#141824;font-weight:800;" onclick="sendWhatsAppReminder('\${r.id}', '\${r.waUrl}')">
+                📲 Confirmar via WhatsApp Agora →
+              </button>
+            </div>
+          \`).join('')}
+        \`;
+      } else {
+        bannerEl.style.display = 'none';
+      }
     }
+
+    window.sendWhatsAppReminder = (apptId, waUrl) => {
+      const sentMap = JSON.parse(localStorage.getItem('wa_sent_map') || '{}');
+      sentMap[apptId] = Date.now();
+      localStorage.setItem('wa_sent_map', JSON.stringify(sentMap));
+      window.open(waUrl, '_blank', 'noopener');
+      loadOwnerDashboard();
+    };
+
+    // Verifica automaticamente a cada 25 segundos se algum agendamento entrou na janela de 30 minutos antes
+    setInterval(() => {
+      if (token && role === 'SHOP_OWNER') loadOwnerDashboard();
+    }, 25000);
 
     function renderView() {
       const badge = document.getElementById('role-badge');
