@@ -1883,13 +1883,10 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
   }
 };
 
-let lastSyncAt = 0;
 let supabaseSynced = false;
 const ensureSupabaseSynced = async () => {
   if (!isSupabaseConfigured()) return;
-  if (supabaseSynced && Date.now() - lastSyncAt < 2000) return;
   supabaseSynced = await hydrateFromSupabase(store);
-  lastSyncAt = Date.now();
 };
 
 export default serverHandler;
