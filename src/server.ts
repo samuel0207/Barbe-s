@@ -54,27 +54,27 @@ const seed = () => {
   const shop1 = validateShop({
     id: 'shop_1',
     slug: 'navalha-ouro',
-    name: 'Navalha de Ouro Barbershop',
+    name: 'Barbearia Navalha de Ouro',
     ownerLogin: 'dono@navalha.com',
     passwordHash: hashPassword('123456'),
     active: true,
   });
   store.shops.set(shop1.id, shop1);
 
-  store.barbers.set('b1', validateBarber({ id: 'b1', shopId: shop1.id, name: 'Alex — Master Barber', commissionRateBps: 4500, active: true }));
-  store.barbers.set('b2', validateBarber({ id: 'b2', shopId: shop1.id, name: 'Morgan — Fade Specialist', commissionRateBps: 4000, active: true }));
-  store.barbers.set('b3', validateBarber({ id: 'b3', shopId: shop1.id, name: 'Sam — Traditional Shave', commissionRateBps: 4000, active: true }));
+  store.barbers.set('b1', validateBarber({ id: 'b1', shopId: shop1.id, name: 'Alex — Barbeiro Mestre', commissionRateBps: 4500, active: true }));
+  store.barbers.set('b2', validateBarber({ id: 'b2', shopId: shop1.id, name: 'Matheus — Especialista em Degradê', commissionRateBps: 4000, active: true }));
+  store.barbers.set('b3', validateBarber({ id: 'b3', shopId: shop1.id, name: 'Samuel — Barba Tradicional', commissionRateBps: 4000, active: true }));
 
   store.services.set('s1', validateService({
-    id: 's1', shopId: shop1.id, name: 'Corte Clássico & Degradê (Haircut)', priceCents: 5500, durationMin: 40,
+    id: 's1', shopId: shop1.id, name: 'Corte Clássico e Degradê', priceCents: 5500, durationMin: 40,
     imageUrl: makeServiceIconSvg('scissors', 'Corte'),
   }));
   store.services.set('s2', validateService({
-    id: 's2', shopId: shop1.id, name: 'Alinhamento de Barba (Beard Trim)', priceCents: 3500, durationMin: 30,
+    id: 's2', shopId: shop1.id, name: 'Alinhamento de Barba', priceCents: 3500, durationMin: 30,
     imageUrl: makeServiceIconSvg('razor', 'Barba'),
   }));
   store.services.set('s3', validateService({
-    id: 's3', shopId: shop1.id, name: 'Barba Toalha Quente (Hot Towel Shave)', priceCents: 6500, durationMin: 45,
+    id: 's3', shopId: shop1.id, name: 'Barba na Toalha Quente', priceCents: 6500, durationMin: 45,
     imageUrl: makeServiceIconSvg('towel', 'Toalha'),
   }));
 
@@ -92,14 +92,14 @@ const seed = () => {
   const shop2 = validateShop({
     id: 'shop_2',
     slug: 'vikings-club',
-    name: 'Vikings Barber Club',
+    name: 'Barbearia Vikings',
     ownerLogin: 'dono@vikings.com',
     passwordHash: hashPassword('123456'),
     active: true,
   });
   store.shops.set(shop2.id, shop2);
 
-  store.barbers.set('b4', validateBarber({ id: 'b4', shopId: shop2.id, name: 'Ragnar — Master Beard', commissionRateBps: 5000, active: true }));
+  store.barbers.set('b4', validateBarber({ id: 'b4', shopId: shop2.id, name: 'Ragnar — Mestre em Barba', commissionRateBps: 5000, active: true }));
   store.services.set('s4', validateService({
     id: 's4', shopId: shop2.id, name: 'Corte Lenhador + Hidratação', priceCents: 7000, durationMin: 45,
     imageUrl: makeServiceIconSvg('scissors', 'Viking'),
@@ -470,46 +470,46 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
 <body>
   <nav class="navbar">
     <div class="navbar-inner">
-      <div class="brand-title" id="shop-name">Sharp Cut Barbershop</div>
+      <div class="brand-title" id="shop-name">Barbearia</div>
       <div class="nav-links">
-        <a href="#services">Services</a>
-        <a href="#barbers">Barbers</a>
-        <a href="#book">Book</a>
+        <a href="#services">Serviços</a>
+        <a href="#barbers">Barbeiros</a>
+        <a href="#book">Agendar</a>
         <a href="/">Login Dono</a>
       </div>
     </div>
   </nav>
 
   <section class="hero">
-    <h1>Sharp Looks,<br/>Clean Cuts</h1>
-    <p>Classic grooming. Clean details. Timeless style.</p>
-    <a href="#book" class="btn-hero">Book Appointment →</a>
+    <h1>Visual Impecável,<br/>Cortes Precisos</h1>
+    <p>Estilo clássico. Acabamento perfeito. Tradição e pontualidade.</p>
+    <a href="#book" class="btn-hero">Agendar Horário →</a>
   </section>
 
   <div class="container">
     <section class="section" id="services">
-      <h2 class="section-title">SERVICES & PRICING</h2>
+      <h2 class="section-title">SERVIÇOS E PREÇOS</h2>
       <div class="services-card" id="srv-list"></div>
     </section>
 
     <section class="section" id="barbers">
-      <h2 class="section-title">MEET OUR BARBERS</h2>
+      <h2 class="section-title">NOSSOS BARBEIROS</h2>
       <div class="barbers-grid" id="barbers-grid"></div>
     </section>
   </div>
 
   <section class="booking-section" id="book">
-    <h2 class="booking-heading">Book Your Appointment</h2>
+    <h2 class="booking-heading">Agende Seu Horário</h2>
     <div class="booking-card">
       <div id="msg"></div>
       <form id="book-form">
         <div class="form-grid">
           <div class="form-group">
-            <label>Nome (Name)</label>
+            <label>Seu Nome</label>
             <input type="text" id="inp-name" placeholder="Digite seu nome completo" required />
           </div>
           <div class="form-group">
-            <label>Estilo de Corte (Service)</label>
+            <label>Estilo de Corte</label>
             <select id="sel-service" required></select>
           </div>
           <div class="form-group">
@@ -517,26 +517,26 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
             <input type="text" id="inp-phone" placeholder="5511999998888" value="55119" required />
           </div>
           <div class="form-group">
-            <label>Barbeiro (Barber)</label>
+            <label>Barbeiro</label>
             <select id="sel-barber" required></select>
           </div>
           <div class="form-group">
-            <label>Data (Date)</label>
+            <label>Data</label>
             <input type="date" id="inp-date" required />
           </div>
           <div class="form-group">
-            <label>Horário (Time)</label>
+            <label>Horário</label>
             <input type="time" id="inp-time" value="11:00" required />
           </div>
         </div>
         <div class="busy-bar" id="busy-slots"></div>
-        <button type="submit" class="btn-confirm">Confirm Booking</button>
+        <button type="submit" class="btn-confirm">Confirmar Agendamento</button>
       </form>
     </div>
 
     <footer>
-      <div id="footer-shop">Sharp Cut Barbershop • Ter–Sáb • 09:00–20:00</div>
-      <div>© 2026 BarberCore SaaS • Todos os direitos reservados</div>
+      <div id="footer-shop">Barbearia • Ter–Sáb • 09:00–20:00</div>
+      <div>© 2026 Sistema de Gestão para Barbearias • Todos os direitos reservados</div>
     </footer>
   </section>
 
@@ -584,16 +584,22 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       const selSrv = document.getElementById('sel-service');
       const currentSrv = selSrv.value || (data.services[0] && data.services[0].id) || '';
 
+      const cleanPt = (txt) => String(txt || '')
+        .replace(/\s*\((Haircut|Beard Trim|Hot Towel Shave)\)/gi, '')
+        .replace(/Master Barber/gi, 'Barbeiro Mestre')
+        .replace(/Fade Specialist/gi, 'Especialista em Degradê')
+        .replace(/Traditional Shave/gi, 'Barba Tradicional');
+
       selSrv.innerHTML = data.services.map(s =>
-        \`<option value="\${s.id}" \${s.id === currentSrv ? 'selected' : ''}>\${s.name} — \${fmtBRL(s.priceCents)}</option>\`
+        \`<option value="\${s.id}" \${s.id === currentSrv ? 'selected' : ''}>\${cleanPt(s.name)} — \${fmtBRL(s.priceCents)}</option>\`
       ).join('');
 
       document.getElementById('srv-list').innerHTML = data.services.map(s => \`
         <div class="service-row \${s.id === selSrv.value ? 'selected' : ''}" onclick="pickService('\${s.id}')">
           <div class="service-left">
-            <img class="service-thumb" src="\${s.imageUrl}" alt="\${s.name}" />
+            <img class="service-thumb" src="\${s.imageUrl}" alt="\${cleanPt(s.name)}" />
             <div>
-              <div class="service-name">\${s.name}</div>
+              <div class="service-name">\${cleanPt(s.name)}</div>
               <div class="service-desc">Acabamento completo & estilo • Duração: \${s.durationMin} min</div>
             </div>
           </div>
@@ -605,13 +611,17 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       const currentBarber = selBarber.value || (data.barbers[0] && data.barbers[0].id) || '';
 
       selBarber.innerHTML = data.barbers.map(b =>
-        \`<option value="\${b.id}" \${b.id === currentBarber ? 'selected' : ''}>\${b.name}</option>\`
+        \`<option value="\${b.id}" \${b.id === currentBarber ? 'selected' : ''}>\${cleanPt(b.name)}</option>\`
       ).join('');
 
       document.getElementById('barbers-grid').innerHTML = data.barbers.map((b, idx) => {
         const parts = b.name.split('—');
         const mainName = parts[0].trim();
-        const specialty = (parts[1] || 'Master Barber').trim();
+        const rawSpec = (parts[1] || 'Barbeiro Mestre').trim();
+        const specialty = rawSpec
+          .replace(/Master Barber/gi, 'Barbeiro Mestre')
+          .replace(/Fade Specialist/gi, 'Especialista em Degradê')
+          .replace(/Traditional Shave/gi, 'Barba Tradicional');
         const avatar = BARBER_AVATARS[idx % BARBER_AVATARS.length];
         return \`
           <div class="barber-card \${b.id === selBarber.value ? 'selected' : ''}" onclick="pickBarber('\${b.id}')">
@@ -1093,7 +1103,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
           <!-- ABA 1: AGENDAMENTOS -->
           <div id="tab-appts" class="browser-tab-content active">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-              <h3>📅 Agendamentos Recebidos ("Book Your Appointment")</h3>
+              <h3>📅 Agendamentos Recebidos</h3>
               <span style="font-size:0.82rem;color:var(--muted);">Atualizado em tempo real com o link público da barbearia</span>
             </div>
             <div class="table-wrap">
@@ -1117,7 +1127,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
           <!-- ABA 2: ESTILOS DE CORTE PUBLICADOS -->
           <div id="tab-published" class="browser-tab-content">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-              <h3>📸 Estilos de Corte Publicados em "Services & Pricing"</h3>
+              <h3>📸 Estilos de Corte Publicados em "Serviços e Preços"</h3>
               <button type="button" class="btn-sm" style="background:var(--gold);color:var(--navy);" onclick="openOwnerTabByName('tab-add-cut')">
                 + Adicionar Novo Corte
               </button>
@@ -1144,7 +1154,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
               <h3 style="margin-bottom:12px;">✂️ Adicionar Novo Estilo de Corte + Foto</h3>
               <form id="form-service">
                 <label>Nome do Estilo de Corte</label>
-                <input type="text" id="srv-name" placeholder="Ex: Taper Fade Clássico" required />
+                <input type="text" id="srv-name" placeholder="Ex: Degradê Navalhado" required />
                 <div class="form-row-2">
                   <div>
                     <label>Preço em R$ (ex: 45)</label>
@@ -1174,15 +1184,15 @@ const PORTAL_HTML = `<!DOCTYPE html>
               <div class="form-box">
                 <h3 style="margin-bottom:12px;">🧔 Cadastrar Novo Barbeiro</h3>
                 <form id="form-barber">
-                  <label>Nome e Especialidade (ex: Alex — Master Barber)</label>
-                  <input type="text" id="bar-name" placeholder="Alex — Master Barber" required />
+                  <label>Nome e Especialidade (ex: Alex — Barbeiro Mestre)</label>
+                  <input type="text" id="bar-name" placeholder="Alex — Barbeiro Mestre" required />
                   <label>Comissão do Barbeiro (%)</label>
                   <input type="number" id="bar-comm" value="40" min="0" max="100" required />
                   <button type="submit" class="btn-primary">Cadastrar Barbeiro →</button>
                 </form>
               </div>
               <div>
-                <h3 style="margin-bottom:12px;">Equipe Atual ("Meet Our Barbers")</h3>
+                <h3 style="margin-bottom:12px;">Equipe Atual ("Nossos Barbeiros")</h3>
                 <div class="table-wrap">
                   <table style="min-width:280px;">
                     <thead>
@@ -1387,6 +1397,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
       const barberMap = Object.fromEntries(data.barbers.map(b => [b.id, b]));
       const serviceMap = Object.fromEntries(data.services.map(s => [s.id, s]));
 
+      const statusPt = { SCHEDULED: 'AGENDADO', COMPLETED: 'CONCLUÍDO', CANCELED: 'CANCELADO' };
       const sortedAppts = [...data.appointments].sort((a, b) => a.startAt - b.startAt);
       document.getElementById('tb-appts').innerHTML = sortedAppts.map(a => {
         const cl = clientMap[a.clientId] || { name: a.clientId, phone: '' };
@@ -1401,7 +1412,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
           <td>\${barberMap[a.barberId]?.name || a.barberId}</td>
           <td>\${srv.name}</td>
           <td>\${fmtBRL(srv.priceCents)}</td>
-          <td><span class="status status-\${a.status}">\${a.status}</span></td>
+          <td><span class="status status-\${a.status}">\${statusPt[a.status] || a.status}</span></td>
           <td>\${act}</td>
         </tr>\`;
       }).join('');
@@ -1740,11 +1751,11 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
         });
         store.shops.set(shop.id, shop);
 
-        const bDefault = validateBarber({ id: `b_${Date.now().toString(36)}`, shopId: shop.id, name: 'Alex — Master Barber', commissionRateBps: 5000, active: true });
+        const bDefault = validateBarber({ id: `b_${Date.now().toString(36)}`, shopId: shop.id, name: 'Alex — Barbeiro Mestre', commissionRateBps: 5000, active: true });
         const sDefault = validateService({
           id: `s_${Date.now().toString(36)}`,
           shopId: shop.id,
-          name: 'Corte Clássico (Haircut)',
+          name: 'Corte Clássico e Degradê',
           priceCents: 4500,
           durationMin: 35,
           imageUrl: makeServiceIconSvg('scissors', 'Corte'),
