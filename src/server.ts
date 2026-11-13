@@ -22,6 +22,7 @@ import {
   hydrateFromSupabase,
   dbUpsertShop,
   dbUpsertBarber,
+  dbDeleteBarber,
   dbUpsertService,
   dbDeleteService,
   dbUpsertClient,
@@ -1200,7 +1201,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
                 <div class="table-wrap">
                   <table style="min-width:280px;">
                     <thead>
-                      <tr><th>Profissional</th><th>Comissão</th><th>Status</th></tr>
+                      <tr><th>Profissional</th><th>Comissão</th><th>Status</th><th>Ação</th></tr>
                     </thead>
                     <tbody id="tb-barbers"></tbody>
                   </table>
@@ -1394,6 +1395,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
           <td><strong>\${b.name}</strong></td>
           <td>\${(b.commissionRateBps / 100).toFixed(0)}%</td>
           <td><span class="status status-ACTIVE">\${b.active ? 'ATIVO' : 'INATIVO'}</span></td>
+          <td><button class="btn-sm btn-cancel" onclick="deleteBarber('\${b.id}')">Remover</button></td>
         </tr>
       \`).join('');
 
@@ -1597,6 +1599,19 @@ const PORTAL_HTML = `<!DOCTYPE html>
       if (!res.ok) showAlert(out.error, true);
       else {
         showAlert('Estilo de corte removido.', false);
+        loadOwnerDashboard();
+      }
+    };
+
+    window.deleteBarber = async (id) => {
+      const res = await fetch('/api/owner/barbers/' + id, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const out = await res.json();
+      if (!res.ok) showAlert(out.error, true);
+      else {
+        showAlert('Barbeiro removido da equipe.', false);
         loadOwnerDashboard();
       }
     };
@@ -1915,6 +1930,18 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
         store.barbers.set(barber.id, barber);
         await dbUpsertBarber(barber);
         sendJson(res, 201, barber);
+        return;
+      }
+
+      if (req.method === 'DELETE' && url.pathname.startsWith('/api/owner/barbers/')) {
+        const barberId = url.pathname.split('/')[4] ?? '';
+        const barber = store.barbers.get(barberId);
+        if (!barber || barber.shopId !== shop.id) {
+          throw new DomainError('TENANT_MISMATCH', 'Barbeiro não encontrado nesta barbearia.');
+        }
+        store.barbers.delete(barberId);
+        await dbDeleteBarber(barberId);
+        sendJson(res, 200, { ok: true });
         return;
       }
 

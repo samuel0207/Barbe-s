@@ -212,6 +212,10 @@ export const dbUpsertBarber = async (b: Barber): Promise<void> => {
   });
 };
 
+export const dbDeleteBarber = async (id: string): Promise<void> => {
+  await sbFetch(`barber_staff?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
+};
+
 export const dbUpsertService = async (s: ServiceItem): Promise<void> => {
   await sbFetch('barber_services?on_conflict=id', {
     method: 'POST',
