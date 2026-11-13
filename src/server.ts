@@ -541,6 +541,14 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
   </section>
 
   <script>
+    const _origFetchPub = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+      if (typeof input === 'string' && input.startsWith('/api/')) {
+        const headers = { ...(init.headers || {}), 'x-barber-route': input };
+        return _origFetchPub('/api?__route=' + encodeURIComponent(input), { ...init, headers });
+      }
+      return _origFetchPub(input, init);
+    };
     const SLUG = ${JSON.stringify(slug)};
     const fmtBRL = (c) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const fmtTime = (ms) => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -1209,6 +1217,14 @@ const PORTAL_HTML = `<!DOCTYPE html>
   </div>
 
   <script>
+    const _origFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+      if (typeof input === 'string' && input.startsWith('/api/')) {
+        const headers = { ...(init.headers || {}), 'x-barber-route': input };
+        return _origFetch('/api?__route=' + encodeURIComponent(input), { ...init, headers });
+      }
+      return _origFetch(input, init);
+    };
     const fmtBRL = (c) => (c / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     const fmtTime = (ms) => new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -1557,8 +1573,18 @@ const PORTAL_HTML = `<!DOCTYPE html>
 </html>`;
 
 const resolvePathname = (req: http.IncomingMessage): string => {
+  const headerRoute = req.headers['x-barber-route'];
+  if (typeof headerRoute === 'string' && headerRoute.startsWith('/')) {
+    return headerRoute;
+  }
   const rawUrl = new URL(req.url ?? '/', 'http://localhost');
-  let p = rawUrl.searchParams.get('__path') || rawUrl.pathname || '/';
+  const shopParam = rawUrl.searchParams.get('shop');
+  if (shopParam) return `/b/${shopParam}`;
+  let p =
+    rawUrl.searchParams.get('__route') ||
+    rawUrl.searchParams.get('__path') ||
+    rawUrl.pathname ||
+    '/';
   if (!p.startsWith('/')) p = '/' + p;
   if (
     p.startsWith('/public/') ||
