@@ -1,0 +1,15 @@
+{
+  "name": "barber-core",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "gate": "./scripts/gate.sh",
+    "start": "./scripts/gate.sh && node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test dist/gate.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}
