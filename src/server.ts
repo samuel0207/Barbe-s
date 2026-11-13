@@ -168,12 +168,14 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       --red: #c93b3b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
     body {
       background: var(--cream-bg);
       color: var(--text-dark);
       min-height: 100vh;
       width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
       border: 10px solid var(--navy);
@@ -266,6 +268,7 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
     /* Seções */
     .section {
       padding: clamp(32px, 5vw, 56px) 0 16px 0;
+      scroll-margin-top: 96px;
     }
     .section-title {
       text-align: center;
@@ -375,6 +378,7 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       padding: clamp(36px, 6vw, 60px) 20px 32px 20px;
       text-align: center;
       width: 100%;
+      scroll-margin-top: 96px;
     }
     .booking-heading {
       color: var(--gold);
@@ -385,16 +389,23 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
     .booking-card {
       background: var(--cream-bg);
       border-radius: 14px;
-      padding: clamp(20px, 4vw, 32px);
+      padding: clamp(18px, 4vw, 32px);
       text-align: left;
+      width: 100%;
       max-width: 820px;
       margin: 0 auto;
+      overflow: hidden;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
     }
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
       gap: 16px 20px;
+      width: 100%;
+    }
+    .form-group {
+      min-width: 0;
+      width: 100%;
     }
     .form-group label {
       display: block;
@@ -404,13 +415,26 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       margin-bottom: 6px;
     }
     .form-group input, .form-group select {
+      display: block;
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
       background: var(--card-white);
       border: 1px solid #dfd5c3;
       color: var(--text-dark);
       padding: 11px 12px;
       border-radius: 8px;
-      font-size: 0.94rem;
+      font-size: 16px;
+      min-height: 44px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .form-group input[type="date"]::-webkit-date-and-time-value,
+    .form-group input[type="time"]::-webkit-date-and-time-value {
+      text-align: left;
     }
     .btn-confirm {
       margin-top: 20px;
@@ -462,9 +486,13 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       text-align: center;
     }
     @media (max-width: 600px) {
-      body { border-width: 6px; }
-      .navbar-inner { justify-content: center; text-align: center; }
-      .service-row { padding: 14px 16px; }
+      body { border-width: 4px; }
+      .container { padding: 0 14px; }
+      .navbar-inner { justify-content: center; text-align: center; padding: 12px 14px; gap: 8px; }
+      .service-row { padding: 14px 14px; }
+      .booking-section { padding: 28px 12px 24px 12px; scroll-margin-top: 100px; }
+      .booking-card { padding: 18px 14px; }
+      .form-grid { grid-template-columns: 1fr; gap: 14px; }
     }
   </style>
 </head>
@@ -717,6 +745,8 @@ const PORTAL_HTML = `<!DOCTYPE html>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     html, body {
       width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
       min-height: 100vh;
       background: var(--cream-bg);
       color: var(--text-dark);
@@ -1188,7 +1218,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
 
           <!-- ABA 4: ADICIONAR BARBEIRO & EQUIPE -->
           <div id="tab-add-barber" class="browser-tab-content">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:24px;">
               <div class="form-box">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;">
                   <h3 id="bar-form-title">🧔 Cadastrar Novo Barbeiro</h3>
