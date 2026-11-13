@@ -112,6 +112,15 @@ seed();
 
 const readJson = (req: http.IncomingMessage): Promise<Record<string, unknown>> =>
   new Promise((resolve, reject) => {
+    const pre = (req as { body?: unknown }).body;
+    if (pre && typeof pre === 'object') {
+      resolve(pre as Record<string, unknown>);
+      return;
+    }
+    if (typeof pre === 'string' && pre.length > 0) {
+      try { resolve(JSON.parse(pre) as Record<string, unknown>); return; }
+      catch (e) { reject(e); return; }
+    }
     let body = '';
     req.on('data', (chunk: Buffer) => {
       body += chunk.toString();
@@ -1547,10 +1556,30 @@ const PORTAL_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+const resolvePathname = (req: http.IncomingMessage): string => {
+  const rawUrl = new URL(req.url ?? '/', 'http://localhost');
+  let p = rawUrl.searchParams.get('__path') || rawUrl.pathname || '/';
+  if (!p.startsWith('/')) p = '/' + p;
+  if (
+    p.startsWith('/public/') ||
+    p.startsWith('/auth/') ||
+    p.startsWith('/admin/') ||
+    p.startsWith('/owner/') ||
+    p === '/health'
+  ) {
+    p = '/api' + p;
+  }
+  if (req.method === 'GET' && (p === '/api' || p === '/api/')) {
+    p = '/';
+  }
+  return p;
+};
+
 const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse) => {
   try {
     await ensureSupabaseSynced();
-    const url = new URL(req.url ?? '/', 'http://localhost');
+    const pathname = resolvePathname(req);
+    const url = { pathname };
 
     if (req.method === 'GET' && url.pathname === '/api/health') {
       sendJson(res, 200, { ok: true, supabaseConnected: supabaseSynced, supabaseConfigured: isSupabaseConfigured() });
@@ -1819,7 +1848,7 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
       }
     }
 
-    sendJson(res, 404, { error: 'Rota não encontrada' });
+    sendJson(res, 404, { error: `Rota não encontrada (${req.method ?? 'GET'} ${url.pathname})` });
   } catch (err) {
     if (err instanceof DomainError) {
       const status =
@@ -1835,10 +1864,13 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
   }
 };
 
+let lastSyncAt = 0;
 let supabaseSynced = false;
 const ensureSupabaseSynced = async () => {
-  if (supabaseSynced || !isSupabaseConfigured()) return;
+  if (!isSupabaseConfigured()) return;
+  if (supabaseSynced && Date.now() - lastSyncAt < 2000) return;
   supabaseSynced = await hydrateFromSupabase(store);
+  lastSyncAt = Date.now();
 };
 
 export default serverHandler;
