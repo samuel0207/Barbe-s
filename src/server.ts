@@ -1190,13 +1190,16 @@ const PORTAL_HTML = `<!DOCTYPE html>
           <div id="tab-add-barber" class="browser-tab-content">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
               <div class="form-box">
-                <h3 style="margin-bottom:12px;">🧔 Cadastrar Novo Barbeiro</h3>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;">
+                  <h3 id="bar-form-title">🧔 Cadastrar Novo Barbeiro</h3>
+                  <button type="button" id="btn-cancel-barber-edit" class="btn-sm btn-cancel" style="display:none;" onclick="cancelEditBarber()">Cancelar Edição</button>
+                </div>
                 <form id="form-barber">
                   <label>Nome e Especialidade (ex: Alex — Barbeiro Mestre)</label>
                   <input type="text" id="bar-name" placeholder="Alex — Barbeiro Mestre" required />
                   <label>Comissão do Barbeiro (%)</label>
                   <input type="number" id="bar-comm" value="40" min="0" max="100" required />
-                  <button type="submit" class="btn-primary">Cadastrar Barbeiro →</button>
+                  <button type="submit" id="btn-submit-barber" class="btn-primary">Cadastrar Barbeiro →</button>
                 </form>
               </div>
               <div>
@@ -1397,12 +1400,16 @@ const PORTAL_HTML = `<!DOCTYPE html>
         </tr>
       \`).join('');
 
+      window.__ownerBarbers = data.barbers;
       document.getElementById('tb-barbers').innerHTML = data.barbers.map(b => \`
         <tr>
           <td><strong>\${b.name}</strong></td>
           <td>\${(b.commissionRateBps / 100).toFixed(0)}%</td>
           <td><span class="status status-ACTIVE">\${b.active ? 'ATIVO' : 'INATIVO'}</span></td>
-          <td><button class="btn-sm btn-cancel" onclick="deleteBarber('\${b.id}')">Remover</button></td>
+          <td>
+            <button class="btn-sm" style="background:var(--gold);color:var(--navy);" onclick="startEditBarber('\${b.id}')">✏ Editar</button>
+            <button class="btn-sm btn-cancel" onclick="deleteBarber('\${b.id}')">Remover</button>
+          </td>
         </tr>
       \`).join('');
 
@@ -1645,6 +1652,29 @@ const PORTAL_HTML = `<!DOCTYPE html>
       }
     };
 
+    let editingBarberId = '';
+
+    window.startEditBarber = (id) => {
+      const list = window.__ownerBarbers || [];
+      const b = list.find(x => x.id === id);
+      if (!b) return;
+      editingBarberId = b.id;
+      document.getElementById('bar-form-title').textContent = '✏ Editando Barbeiro: ' + b.name;
+      document.getElementById('btn-submit-barber').textContent = 'Salvar Alterações do Barbeiro →';
+      document.getElementById('btn-cancel-barber-edit').style.display = 'inline-block';
+      document.getElementById('bar-name').value = b.name;
+      document.getElementById('bar-comm').value = (b.commissionRateBps / 100).toFixed(0);
+    };
+
+    window.cancelEditBarber = () => {
+      editingBarberId = '';
+      document.getElementById('bar-form-title').textContent = '🧔 Cadastrar Novo Barbeiro';
+      document.getElementById('btn-submit-barber').textContent = 'Cadastrar Barbeiro →';
+      document.getElementById('btn-cancel-barber-edit').style.display = 'none';
+      document.getElementById('bar-name').value = '';
+      document.getElementById('bar-comm').value = '40';
+    };
+
     window.deleteBarber = async (id) => {
       const res = await fetch('/api/owner/barbers/' + id, {
         method: 'DELETE',
@@ -1653,6 +1683,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
       const out = await res.json();
       if (!res.ok) showAlert(out.error, true);
       else {
+        if (editingBarberId === id) window.cancelEditBarber();
         showAlert('Barbeiro removido da equipe.', false);
         loadOwnerDashboard();
       }
@@ -1664,6 +1695,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({
+          id: editingBarberId || undefined,
           name: document.getElementById('bar-name').value,
           commissionRateBps: Math.round(Number(document.getElementById('bar-comm').value) * 100)
         })
@@ -1671,8 +1703,9 @@ const PORTAL_HTML = `<!DOCTYPE html>
       const out = await res.json();
       if (!res.ok) showAlert(out.error, true);
       else {
-        document.getElementById('bar-name').value = '';
-        showAlert('Barbeiro adicionado à equipe!', false);
+        const wasEdit = Boolean(editingBarberId);
+        window.cancelEditBarber();
+        showAlert(wasEdit ? 'Dados do barbeiro atualizados!' : 'Barbeiro adicionado à equipe!', false);
         loadOwnerDashboard();
       }
     });
@@ -1971,8 +2004,15 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
 
       if (req.method === 'POST' && url.pathname === '/api/owner/barbers') {
         const body = await readJson(req);
+        const editId = body['id'] ? String(body['id']).trim() : '';
+        if (editId) {
+          const existing = store.barbers.get(editId);
+          if (!existing || existing.shopId !== shop.id) {
+            throw new DomainError('TENANT_MISMATCH', 'Barbeiro inválido para edição.');
+          }
+        }
         const barber = validateBarber({
-          id: `b_${Date.now().toString(36)}`,
+          id: editId || `b_${Date.now().toString(36)}`,
           shopId: shop.id,
           name: String(body['name'] ?? ''),
           commissionRateBps: Number(body['commissionRateBps']),
@@ -1980,7 +2020,7 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
         });
         store.barbers.set(barber.id, barber);
         await dbUpsertBarber(barber);
-        sendJson(res, 201, barber);
+        sendJson(res, editId ? 200 : 201, barber);
         return;
       }
 
