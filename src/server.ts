@@ -475,7 +475,7 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
         <a href="#services">Serviços</a>
         <a href="#barbers">Barbeiros</a>
         <a href="#book">Agendar</a>
-        <a href="/">Login Dono</a>
+        <a href="/">Login</a>
       </div>
     </div>
   </nav>
