@@ -970,34 +970,17 @@ const PORTAL_HTML = `<!DOCTYPE html>
     <div class="workspace">
       <div id="alert"></div>
 
-      <!-- 1. TELA DE LOGIN CENTRALIZADA E RESPONSIVA -->
-      <div id="auth-view" style="max-width:580px;width:100%;margin:auto;">
+      <!-- 1. TELA DE LOGIN LIMPA E DIRETA -->
+      <div id="auth-view" style="max-width:440px;width:100%;margin:auto;">
         <div class="card">
-          <h2 style="margin-bottom:10px;font-size:1.1rem;">🔐 Login do Sistema (Master & Vendedores)</h2>
-          <p style="font-size:0.84rem;color:var(--muted);margin-bottom:14px;">
-            Somente <strong>Samuel22</strong> pode criar e ativar novas barbearias. Vendedores acessam seu painel em abas para gerenciar agendamentos, estilos de corte e barbeiros.
-          </p>
+          <h2 style="margin-bottom:14px;font-size:1.15rem;text-align:center;">🔐 Acesso ao Painel</h2>
           <form id="form-login">
             <label>Login ou E-mail</label>
-            <input type="text" id="login-user" value="Samuel22" required />
+            <input type="text" id="login-user" placeholder="Digite seu login ou e-mail" required />
             <label>Senha</label>
-            <input type="password" id="login-pass" value="153624sa" required />
+            <input type="password" id="login-pass" placeholder="••••••••" required />
             <button type="submit" class="btn-primary">Entrar no Painel →</button>
           </form>
-          <div style="margin-top:16px;border-top:1px solid var(--border-sand);padding-top:12px;">
-            <span style="font-size:0.78rem;color:var(--muted);display:block;">Preenchimento rápido para teste:</span>
-            <span class="demo-pill" onclick="fillLogin('Samuel22','153624sa')">👑 Meu Login Master (Samuel22)</span>
-            <span class="demo-pill" onclick="fillLogin('dono@navalha.com','123456')">💈 Vendedor: Navalha de Ouro</span>
-            <span class="demo-pill" onclick="fillLogin('dono@vikings.com','123456')">🪓 Vendedor: Vikings Club</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2 style="margin-bottom:8px;font-size:1rem;">✂️ Sites Públicos Ativos (Layout Sharp Cut)</h2>
-          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">
-            Links públicos que os clientes acessam na Vercel para escolher o corte e marcar a hora:
-          </p>
-          <div id="public-shops-list" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
         </div>
       </div>
 
@@ -1443,7 +1426,6 @@ const PORTAL_HTML = `<!DOCTYPE html>
         document.getElementById('auth-view').style.display = 'block';
         document.getElementById('master-view').style.display = 'none';
         document.getElementById('owner-view').style.display = 'none';
-        loadDirectory();
       }
     }
 
