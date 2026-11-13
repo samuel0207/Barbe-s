@@ -485,14 +485,35 @@ const renderPublicShopHtml = (slug: string) => `<!DOCTYPE html>
       line-height: 1.6;
       text-align: center;
     }
-    @media (max-width: 600px) {
+    @media (max-width: 640px) {
       body { border-width: 4px; }
-      .container { padding: 0 14px; }
-      .navbar-inner { justify-content: center; text-align: center; padding: 12px 14px; gap: 8px; }
-      .service-row { padding: 14px 14px; }
-      .booking-section { padding: 28px 12px 24px 12px; scroll-margin-top: 100px; }
-      .booking-card { padding: 18px 14px; }
-      .form-grid { grid-template-columns: 1fr; gap: 14px; }
+      .container { padding: 0 12px; }
+      .navbar-inner { flex-direction: column; justify-content: center; text-align: center; padding: 10px 12px; gap: 8px; }
+      .brand-title { font-size: 1.15rem; }
+      .nav-links {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        width: 100%;
+        gap: 6px;
+      }
+      .nav-links a {
+        background: var(--cream-bg);
+        border: 1px solid var(--border-sand);
+        padding: 8px 4px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-align: center;
+      }
+      .hero { padding: 40px 14px; }
+      .service-row { padding: 12px; gap: 10px; }
+      .service-thumb { width: 50px; height: 50px; }
+      .barbers-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+      .barber-card { padding: 18px 12px; }
+      .barber-avatar { width: 72px; height: 72px; }
+      .booking-section { padding: 28px 10px 24px 10px; scroll-margin-top: 104px; }
+      .booking-card { padding: 16px 12px; }
+      .form-grid { grid-template-columns: 1fr; gap: 12px; }
     }
   </style>
 </head>
@@ -938,12 +959,14 @@ const PORTAL_HTML = `<!DOCTYPE html>
     label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-dark); margin-top: 12px; margin-bottom: 5px; }
     input, select {
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
       background: #fff;
       border: 1px solid #dcd0bc;
       color: var(--text-dark);
       padding: 10px 12px;
       border-radius: 8px;
-      font-size: 0.92rem;
+      font-size: 16px;
     }
     .btn-primary {
       cursor: pointer;
@@ -994,10 +1017,105 @@ const PORTAL_HTML = `<!DOCTYPE html>
     .err { background: rgba(201, 59, 59, 0.14); border: 1px solid var(--red); color: var(--red); }
     .ok { background: rgba(37, 121, 66, 0.14); border: 1px solid var(--green); color: var(--green); }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .app-shell { border-width: 4px; }
-      header { padding: 12px 16px; }
-      .browser-tab { padding: 9px 14px; font-size: 0.8rem; }
+      header { padding: 12px 14px; }
+      header h1 { font-size: 1.02rem; }
+      header h1 span { display: none; }
+      .workspace { padding: 10px; }
+      .top-banner { flex-direction: column; align-items: stretch; padding: 12px; gap: 10px; }
+      .top-banner span { display: block; margin-left: 0 !important; margin-top: 4px; }
+      .top-banner a { display: inline-block; word-break: break-all; margin-top: 2px; }
+      .top-banner .btn-outline { width: 100%; text-align: center; padding: 10px; }
+
+      /* KPIs em grade 2x2 compacta no celular */
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .kpi { padding: 12px; }
+      .kpi span { font-size: 0.68rem; }
+      .kpi strong { font-size: 1.15rem; }
+
+      /* Abas em Grade 2x2 estilo App Mobile (todas visíveis sem precisar arrastar pro lado) */
+      .browser-tabs-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 10px;
+        overflow-x: visible;
+      }
+      .browser-tab {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        line-height: 1.25;
+        padding: 10px 8px;
+        font-size: 0.78rem;
+        border-radius: 8px;
+      }
+      .browser-tab.active {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .browser-tab-content {
+        padding: 14px 10px;
+      }
+      .form-box {
+        padding: 14px 12px;
+      }
+      .form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      /* Modo Cards Mobile para TODAS as tabelas das abas */
+      .table-wrap { overflow-x: visible; }
+      table { min-width: 0 !important; width: 100%; display: block; }
+      thead { display: none; }
+      tbody { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+      tbody tr {
+        display: block;
+        background: var(--cream-bg);
+        border: 1px solid var(--border-sand);
+        border-left: 4px solid var(--gold);
+        border-radius: 12px;
+        padding: 12px 14px;
+        box-shadow: 0 3px 10px rgba(20, 24, 36, 0.05);
+      }
+      tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--border-sand);
+        text-align: right;
+        font-size: 0.86rem;
+        word-break: break-word;
+      }
+      tbody td:last-child {
+        border-bottom: none;
+        padding-top: 10px;
+        padding-bottom: 2px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      tbody td::before {
+        content: attr(data-label);
+        font-weight: 800;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-align: left;
+        flex-shrink: 0;
+      }
+      tbody td .btn-sm {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
@@ -1366,12 +1484,12 @@ const PORTAL_HTML = `<!DOCTYPE html>
 
       document.getElementById('tb-master-shops').innerHTML = data.shops.map(s => \`
         <tr>
-          <td><strong>\${s.name}</strong></td>
-          <td><a href="/b/\${s.slug}" target="_blank" style="color:var(--gold-dark);font-weight:800;text-decoration:none;">/b/\${s.slug} ↗</a></td>
-          <td><code>\${s.ownerLogin}</code></td>
-          <td>\${s.servicesCount} cortes • \${s.appointmentsCount} agendamentos</td>
-          <td><span class="status \${s.active ? 'status-ACTIVE' : 'status-INACTIVE'}">\${s.active ? 'ATIVA' : 'INATIVA'}</span></td>
-          <td>
+          <td data-label="Barbearia"><strong>\${s.name}</strong></td>
+          <td data-label="Link Público"><a href="/b/\${s.slug}" target="_blank" style="color:var(--gold-dark);font-weight:800;text-decoration:none;">/b/\${s.slug} ↗</a></td>
+          <td data-label="Login Vendedor"><code>\${s.ownerLogin}</code></td>
+          <td data-label="Cortes / Agenda">\${s.servicesCount} cortes • \${s.appointmentsCount} agendamentos</td>
+          <td data-label="Status"><span class="status \${s.active ? 'status-ACTIVE' : 'status-INACTIVE'}">\${s.active ? 'ATIVA' : 'INATIVA'}</span></td>
+          <td data-label="Ação">
             <button class="btn-sm" style="background:\${s.active ? 'var(--red)' : 'var(--green)'}" onclick="toggleShop('\${s.id}')">
               \${s.active ? 'Desativar' : 'Ativar'}
             </button>
@@ -1419,11 +1537,11 @@ const PORTAL_HTML = `<!DOCTYPE html>
       window.__ownerServices = data.services;
       document.getElementById('tb-services').innerHTML = data.services.map(s => \`
         <tr>
-          <td><img class="cut-thumb" src="\${s.imageUrl}" alt="\${s.name}" /></td>
-          <td><strong>\${s.name}</strong></td>
-          <td>\${s.durationMin} min</td>
-          <td style="font-weight:800;color:var(--gold-dark);">\${fmtBRL(s.priceCents)}</td>
-          <td>
+          <td data-label="Imagem"><img class="cut-thumb" src="\${s.imageUrl}" alt="\${s.name}" /></td>
+          <td data-label="Estilo de Corte"><strong>\${s.name}</strong></td>
+          <td data-label="Duração">\${s.durationMin} min</td>
+          <td data-label="Preço" style="font-weight:800;color:var(--gold-dark);">\${fmtBRL(s.priceCents)}</td>
+          <td data-label="Ação">
             <button class="btn-sm" style="background:var(--gold);color:var(--navy);" onclick="startEditService('\${s.id}')">✏ Editar</button>
             <button class="btn-sm btn-cancel" onclick="deleteService('\${s.id}')">Remover</button>
           </td>
@@ -1433,10 +1551,10 @@ const PORTAL_HTML = `<!DOCTYPE html>
       window.__ownerBarbers = data.barbers;
       document.getElementById('tb-barbers').innerHTML = data.barbers.map(b => \`
         <tr>
-          <td><strong>\${b.name}</strong></td>
-          <td>\${(b.commissionRateBps / 100).toFixed(0)}%</td>
-          <td><span class="status status-ACTIVE">\${b.active ? 'ATIVO' : 'INATIVO'}</span></td>
-          <td>
+          <td data-label="Profissional"><strong>\${b.name}</strong></td>
+          <td data-label="Comissão">\${(b.commissionRateBps / 100).toFixed(0)}%</td>
+          <td data-label="Status"><span class="status status-ACTIVE">\${b.active ? 'ATIVO' : 'INATIVO'}</span></td>
+          <td data-label="Ação">
             <button class="btn-sm" style="background:var(--gold);color:var(--navy);" onclick="startEditBarber('\${b.id}')">✏ Editar</button>
             <button class="btn-sm btn-cancel" onclick="deleteBarber('\${b.id}')">Remover</button>
           </td>
@@ -1492,14 +1610,14 @@ const PORTAL_HTML = `<!DOCTYPE html>
              <button class="btn-sm btn-cancel" onclick="ownerAction('\${a.id}','cancel')">✖</button>\`
           : '<span style="color:var(--muted);font-size:0.78rem;">Finalizado</span>';
         return \`<tr style="\${isDue30Min && !wasSent ? 'background:#fff8eb;' : ''}">
-          <td><strong>\${fmtTime(a.startAt)}</strong> - \${fmtTime(a.endAt)}</td>
-          <td>\${cl.name} <span style="color:var(--muted);font-size:0.76rem;">(\${cl.phone})</span></td>
-          <td>\${barberMap[a.barberId]?.name || a.barberId}</td>
-          <td>\${srv.name}</td>
-          <td>\${fmtBRL(srv.priceCents)}</td>
-          <td>\${waCol}</td>
-          <td><span class="status status-\${a.status}">\${statusPt[a.status] || a.status}</span></td>
-          <td>\${act}</td>
+          <td data-label="Horário"><strong>\${fmtTime(a.startAt)}</strong> - \${fmtTime(a.endAt)}</td>
+          <td data-label="Cliente">\${cl.name} <span style="color:var(--muted);font-size:0.76rem;">(\${cl.phone})</span></td>
+          <td data-label="Barbeiro">\${barberMap[a.barberId]?.name || a.barberId}</td>
+          <td data-label="Corte">\${srv.name}</td>
+          <td data-label="Valor"><strong>\${fmtBRL(srv.priceCents)}</strong></td>
+          <td data-label="WhatsApp (30m)"><div>\${waCol}</div></td>
+          <td data-label="Status"><span class="status status-\${a.status}">\${statusPt[a.status] || a.status}</span></td>
+          <td data-label="Ação">\${act}</td>
         </tr>\`;
       }).join('');
 
