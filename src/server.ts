@@ -1153,17 +1153,20 @@ const PORTAL_HTML = `<!DOCTYPE html>
             </div>
           </div>
 
-          <!-- ABA 3: ADICIONAR CORTE + FOTO -->
+          <!-- ABA 3: ADICIONAR / EDITAR CORTE + FOTO -->
           <div id="tab-add-cut" class="browser-tab-content">
             <div class="form-box">
-              <h3 style="margin-bottom:12px;">✂️ Adicionar Novo Estilo de Corte + Foto</h3>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;">
+                <h3 id="srv-form-title">✂️ Adicionar Novo Estilo de Corte + Foto</h3>
+                <button type="button" id="btn-cancel-edit" class="btn-sm btn-cancel" style="display:none;" onclick="cancelEditService()">Cancelar Edição</button>
+              </div>
               <form id="form-service">
                 <label>Nome do Estilo de Corte</label>
                 <input type="text" id="srv-name" placeholder="Ex: Degradê Navalhado" required />
                 <div class="form-row-2">
                   <div>
                     <label>Preço em R$ (ex: 45)</label>
-                    <input type="number" id="srv-price" value="45" min="1" required />
+                    <input type="number" id="srv-price" value="45" min="1" step="0.01" required />
                   </div>
                   <div>
                     <label>Duração (minutos)</label>
@@ -1178,7 +1181,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
                   <img id="img-preview" class="cut-thumb" src="" alt="Preview" />
                   <span style="font-size:0.82rem;color:var(--green);font-weight:700;">✔ Imagem pronta para publicação</span>
                 </div>
-                <button type="submit" class="btn-primary">Publicar Estilo de Corte →</button>
+                <button type="submit" id="btn-submit-srv" class="btn-primary">Publicar Estilo de Corte →</button>
               </form>
             </div>
           </div>
@@ -1380,13 +1383,17 @@ const PORTAL_HTML = `<!DOCTYPE html>
       document.getElementById('badge-services').textContent = data.services.length;
       document.getElementById('badge-barbers').textContent = data.barbers.length;
 
+      window.__ownerServices = data.services;
       document.getElementById('tb-services').innerHTML = data.services.map(s => \`
         <tr>
           <td><img class="cut-thumb" src="\${s.imageUrl}" alt="\${s.name}" /></td>
           <td><strong>\${s.name}</strong></td>
           <td>\${s.durationMin} min</td>
           <td style="font-weight:800;color:var(--gold-dark);">\${fmtBRL(s.priceCents)}</td>
-          <td><button class="btn-sm btn-cancel" onclick="deleteService('\${s.id}')">Remover</button></td>
+          <td>
+            <button class="btn-sm" style="background:var(--gold);color:var(--navy);" onclick="startEditService('\${s.id}')">✏ Editar</button>
+            <button class="btn-sm btn-cancel" onclick="deleteService('\${s.id}')">Remover</button>
+          </td>
         </tr>
       \`).join('');
 
@@ -1563,6 +1570,43 @@ const PORTAL_HTML = `<!DOCTYPE html>
       }
     });
 
+    let editingServiceId = '';
+
+    window.startEditService = (id) => {
+      const list = window.__ownerServices || [];
+      const srv = list.find(x => x.id === id);
+      if (!srv) return;
+      editingServiceId = srv.id;
+      document.getElementById('srv-form-title').textContent = '✏ Editando Corte: ' + srv.name;
+      document.getElementById('btn-submit-srv').textContent = 'Salvar Alterações do Corte →';
+      document.getElementById('btn-cancel-edit').style.display = 'inline-block';
+      document.getElementById('srv-name').value = srv.name;
+      document.getElementById('srv-price').value = (srv.priceCents / 100).toString();
+      document.getElementById('srv-dur').value = srv.durationMin.toString();
+      document.getElementById('srv-file').value = '';
+      document.getElementById('srv-img-url').value = '';
+      uploadedImageDataUrl = srv.imageUrl || '';
+      if (uploadedImageDataUrl) {
+        document.getElementById('img-preview').src = uploadedImageDataUrl;
+        document.getElementById('img-preview-box').style.display = 'flex';
+      }
+      window.openOwnerTabByName('tab-add-cut');
+    };
+
+    window.cancelEditService = () => {
+      editingServiceId = '';
+      document.getElementById('srv-form-title').textContent = '✂️ Adicionar Novo Estilo de Corte + Foto';
+      document.getElementById('btn-submit-srv').textContent = 'Publicar Estilo de Corte →';
+      document.getElementById('btn-cancel-edit').style.display = 'none';
+      document.getElementById('srv-name').value = '';
+      document.getElementById('srv-price').value = '45';
+      document.getElementById('srv-dur').value = '40';
+      document.getElementById('srv-file').value = '';
+      document.getElementById('srv-img-url').value = '';
+      uploadedImageDataUrl = '';
+      document.getElementById('img-preview-box').style.display = 'none';
+    };
+
     document.getElementById('form-service').addEventListener('submit', async (e) => {
       e.preventDefault();
       const finalImage = uploadedImageDataUrl || document.getElementById('srv-img-url').value.trim();
@@ -1570,6 +1614,7 @@ const PORTAL_HTML = `<!DOCTYPE html>
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({
+          id: editingServiceId || undefined,
           name: document.getElementById('srv-name').value,
           priceCents: Math.round(Number(document.getElementById('srv-price').value) * 100),
           durationMin: Number(document.getElementById('srv-dur').value),
@@ -1579,12 +1624,9 @@ const PORTAL_HTML = `<!DOCTYPE html>
       const out = await res.json();
       if (!res.ok) showAlert(out.error, true);
       else {
-        document.getElementById('srv-name').value = '';
-        document.getElementById('srv-file').value = '';
-        document.getElementById('srv-img-url').value = '';
-        uploadedImageDataUrl = '';
-        document.getElementById('img-preview-box').style.display = 'none';
-        showAlert('Estilo de corte publicado! Redirecionando para Estilos Publicados...', false);
+        const wasEdit = Boolean(editingServiceId);
+        window.cancelEditService();
+        showAlert(wasEdit ? 'Estilo de corte atualizado com sucesso!' : 'Estilo de corte publicado!', false);
         await loadOwnerDashboard();
         window.openOwnerTabByName('tab-published');
       }
@@ -1890,19 +1932,28 @@ const serverHandler = async (req: http.IncomingMessage, res: http.ServerResponse
 
       if (req.method === 'POST' && url.pathname === '/api/owner/services') {
         const body = await readJson(req);
+        const editId = body['id'] ? String(body['id']).trim() : '';
+        let existingImage = '';
+        if (editId) {
+          const existing = store.services.get(editId);
+          if (!existing || existing.shopId !== shop.id) {
+            throw new DomainError('TENANT_MISMATCH', 'Estilo de corte inválido para edição.');
+          }
+          existingImage = existing.imageUrl;
+        }
         const name = String(body['name'] ?? '').trim();
         const rawImage = String(body['imageUrl'] ?? '').trim();
         const srv = validateService({
-          id: `s_${Date.now().toString(36)}`,
+          id: editId || `s_${Date.now().toString(36)}`,
           shopId: shop.id,
           name,
           priceCents: Number(body['priceCents']),
           durationMin: Number(body['durationMin']),
-          imageUrl: rawImage || makeServiceIconSvg('custom', name),
+          imageUrl: rawImage || existingImage || makeServiceIconSvg('custom', name),
         });
         store.services.set(srv.id, srv);
         await dbUpsertService(srv);
-        sendJson(res, 201, srv);
+        sendJson(res, editId ? 200 : 201, srv);
         return;
       }
 
